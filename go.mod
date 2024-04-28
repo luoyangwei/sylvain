@@ -1,4 +1,4 @@
-module github.com/luoyangwei/sylvain/v1
+module github.com/luoyangwei/sylvain
 
 go 1.22
 
