@@ -2,8 +2,9 @@
 /.vscode/
 /.idea/
 /.trunk
-/deploy
-/deploy/*
+# /deploy
+/deploy/etcd
+/deploy/nats
 /cmd
 
 # Output of the go coverage tool, specifically when used with LiteIDE

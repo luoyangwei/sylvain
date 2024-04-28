@@ -3,10 +3,11 @@ package sylvain
 import (
 	"context"
 	"fmt"
-	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"
 	"math/rand"
 	"time"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 type ServerDiscoverOption func(svr *Server)
@@ -20,7 +21,7 @@ type NamedServerDiscover struct {
 	clt    *Client
 	ticker *time.Ticker
 
-	leaseKeepAlive <-chan *clientv3.LeaseKeepAliveResponse
+	// leaseKeepAlive <-chan *clientv3.LeaseKeepAliveResponse
 
 	// handler 当服务数据变动时，会调用这个函数通知监听
 	//handler ServerDiscoverHandler
@@ -39,11 +40,12 @@ func NewNamedServerDiscover(clt *Client, opts ...ServerDiscoverOption) *NamedSer
 		clt:    clt,
 		ticker: time.NewTicker(3 * time.Second),
 	}
-	namedServerDiscover.publishWithLeaseKey(5)
 
+	namedServerDiscover.publishWithLeaseKey(5)
 	return namedServerDiscover
 }
 
+// publishWithLeaseKey 将服务信息 push 到 etcd 里
 func (discover *NamedServerDiscover) publishWithLeaseKey(lease int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -64,6 +66,7 @@ func (discover *NamedServerDiscover) publishWithLeaseKey(lease int64) {
 	go discover.monitor()
 }
 
+// keepAlive 让服务在 etcd 里保持存活
 func (discover *NamedServerDiscover) keepAlive() {
 	for {
 		select {
@@ -78,6 +81,7 @@ func (discover *NamedServerDiscover) keepAlive() {
 	}
 }
 
+// monitor 监听 etcd key 的变化
 func (discover *NamedServerDiscover) monitor() {
 	for {
 		select {
@@ -119,6 +123,7 @@ func (discover *NamedServerDiscover) ElectionServerEndpoint(name string) string 
 	return servers[idx-1].Addr
 }
 
+// Close discover close
 func (discover *NamedServerDiscover) Close() {
 	discover.ticker.Stop()
 
