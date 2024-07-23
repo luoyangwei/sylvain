@@ -63,7 +63,9 @@ func (discover *NamedServerDiscover) publishWithLeaseKey(lease int64) {
 	}
 
 	go discover.keepAlive()
-	go discover.monitor()
+	if discover.svr.perception {
+		go discover.monitor()
+	}
 }
 
 // keepAlive 让服务在 etcd 里保持存活
@@ -96,12 +98,14 @@ func (discover *NamedServerDiscover) monitor() {
 
 // ElectionServerEndpoint 选举服务，根据算法会返回一个最佳的服务器地址
 func (discover *NamedServerDiscover) ElectionServerEndpoint(name string) string {
-	response, err := discover.clt.Get(context.Background(), serverNamed(name))
+	response, err := discover.clt.Get(context.Background(), serverNamedPrefix(name), clientv3.WithPrefix())
 	if err != nil {
 		// ERROR
+		log.Fatalln("error", err)
 	}
 
 	if response.Count == 0 {
+		discover.clt.GetLogger().Error("no server")
 		return ""
 	}
 
@@ -140,8 +144,12 @@ func (discover *NamedServerDiscover) Close() {
 	_ = discover.clt.Close()
 }
 
-func serverNamed(name string) string {
+func serverNamedPrefix(name string) string {
 	return fmt.Sprintf("server/%s", name)
+}
+
+func serverNamed(name string) string {
+	return fmt.Sprintf("server/%s/%d", name, rand.Uint64())
 }
 
 func WithServerNamed(name string) ServerDiscoverOption {
@@ -153,5 +161,11 @@ func WithServerNamed(name string) ServerDiscoverOption {
 func WithServerPort(port int) ServerDiscoverOption {
 	return func(svr *Server) {
 		svr.port = port
+	}
+}
+
+func WithServerPerception() ServerDiscoverOption {
+	return func(svr *Server) {
+		svr.perception = true
 	}
 }

@@ -17,6 +17,8 @@ type Server struct {
 	ip   string
 	port int
 
+	perception bool // perception 感知能力, 服务可以监听到 etcd 的变化
+
 	Addr string `json:"addr"`
 	Name string `json:"name,omitempty"` // name of the server
 }
