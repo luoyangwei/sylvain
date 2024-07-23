@@ -4,7 +4,7 @@ sylvain 定位是提供给服务服务注册发现的能力, 支持快速结合 
 
 ## 现在开始
 
-> 使用到 Go 高版本的特性，请讲 Go 升级到 ^1.17
+> 请将 Go 升级到 ^1.17
 
 ```
 go get -u github.com/luoyangwei/sylvain
